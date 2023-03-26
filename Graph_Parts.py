@@ -19,10 +19,10 @@ class Node:
         self.linked_nodes.append(node)
 
     def get_linked_nodes(self):
-        linked_nodes = []
+        linked_nodes_names = []
         for node in self.linked_nodes:
-            linked_nodes.append(node.name)
-        return linked_nodes
+            linked_nodes_names.append(node.name)
+        return linked_nodes_names
 
 
 class Edge:
