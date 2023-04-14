@@ -30,9 +30,14 @@ class Edge:
         self.weight = weight
         self.node_init = node_init.name
         self.node_end = node_end.name
+        self.name = node_init.name + node_end.name
+        self.second_name = node_end.name + node_init.name
         self.node_init_coords = node_init.coords
         self.node_end_coords = node_end.coords
         self.line = Line(self.weight, self.node_init_coords, self.node_end_coords, "black")
+
+    def change_color(self, color, c):
+        self.line.change_color(color, c)
 
     def paint_edge(self, c):
         self.line.paint(c)

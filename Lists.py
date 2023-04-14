@@ -1,4 +1,3 @@
-
 class ListNodes:
     def __init__(self):
         self.list_nodes = []
@@ -24,9 +23,33 @@ class ListNodes:
         return is_a_node, node_touched
 
     def search_node_by_name(self, name):
-        response = False
+        response_node = False
         for node in self.list_nodes:
             if node.name.upper() == name.upper():
-                response = True
+                response_node = True
                 break
-        return response
+        return response_node
+
+
+class ListEdges:
+    def __init__(self):
+        self.list_of_edges = []
+
+    def add(self, edge):
+        self.list_of_edges.append(edge)
+
+    def reinit_edges(self, c):
+        for edges in self.list_of_edges:
+            edges.change_color("black", c)
+
+    def paint_edge(self, name, c):
+        painted_edge = None
+        for edge in self.list_of_edges:
+            if edge.name.upper() == name.upper():
+                painted_edge = edge
+                break
+            if edge.second_name.upper() == name.upper():
+                painted_edge = edge
+                break
+        painted_edge.change_color("red", c)
+

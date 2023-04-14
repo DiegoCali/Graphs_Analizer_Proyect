@@ -1,5 +1,5 @@
 from Graph_Parts import *
-from List_Nodes import *
+from Lists import *
 import heapq
 from Graph import Graph
 import tkinter as tk
@@ -43,6 +43,15 @@ def dijkstra():
         also_in_graph = list_nodes.search_node_by_name(name_end_node)
         if name_end_node is not None and also_in_graph:
             distance, path = dijkstra_shortest_path(new_graph, name_init_node.upper(), name_end_node.upper())
+            counter, length = 0, len(path)
+            list_edges.reinit_edges(canvas)
+            while counter < length - 1:
+                name = path[counter] + path[counter + 1]
+                list_edges.paint_edge(name, canvas)
+                counter = counter + 1
+            for node in list_nodes.list_nodes:  # we repaint the nodes so the edges are left behind
+                node.paint_node(canvas)
+                node.change_color("yellow", canvas)
             msg.showinfo(title=f"The shortest path from {name_init_node.upper()} to {name_end_node.upper()}",
                          message=f"Number of edges: {distance}, Path: {path}")
         else:
@@ -80,6 +89,7 @@ def finish_edge(event, first_node):
     if is_touching:
         new_edge = Edge("", first_node, last_node)
         new_edge.paint_edge(canvas)  # create a new edge
+        list_edges.add(new_edge)
         first_node.add_linked_node(last_node)
         last_node.add_linked_node(first_node)
         for node in list_nodes.list_nodes:  # we repaint the nodes so the edges are left behind
@@ -91,10 +101,12 @@ def finish_edge(event, first_node):
 def re_init():
     canvas.delete("all")
     list_nodes.list_nodes = []
+    list_edges.list_of_edges = []
 
 
 if __name__ == '__main__':
     list_nodes = ListNodes()
+    list_edges = ListEdges()
     window = tk.Tk()
     window.title("Graphs Theory (Dijkstra)")
     window.resizable(False, False)
