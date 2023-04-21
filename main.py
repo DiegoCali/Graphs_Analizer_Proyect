@@ -1,34 +1,28 @@
 from Graph_Parts import *
 from Lists import *
-import heapq
 from Graph import Graph
 import tkinter as tk
 from tkinter import simpledialog
 import tkinter.messagebox as msg
 
 
-def dijkstra_shortest_path(graph, start, end):
-    dist = {node: float('inf') for node in graph}
-    dist[start] = 0
-    predecessors = {node: None for node in graph}
-    pq = [(0, start)]
-    while pq:
-        curr_dist, curr_node = heapq.heappop(pq)
-        if curr_node == end:
-            path = []
-            while curr_node is not None:
-                path.append(curr_node)
-                curr_node = predecessors[curr_node]
-            return curr_dist, list(reversed(path))
-        if curr_dist > dist[curr_node]:
-            continue
-        for neighbor, weight in graph[curr_node].items():
-            distance = curr_dist + weight
-            if distance < dist[neighbor]:
-                dist[neighbor] = distance
-                predecessors[neighbor] = curr_node
-                heapq.heappush(pq, (distance, neighbor))
-    return None
+def dijkstra_shortest_path(graph, start, end, top_n):
+    paths = []
+
+    def dfs(node, path):
+        if node == end:
+            paths.append(path[:])
+        else:
+            for neighbor in graph[node]:
+                if neighbor not in path:
+                    path.append(neighbor)
+                    dfs(neighbor, path)
+                    path.pop()
+
+    dfs(start, [start])
+    paths.sort(key=lambda x: len(x))
+    top_paths = paths[:top_n] if top_n else paths
+    return top_paths
 
 
 def dijkstra():
@@ -42,18 +36,20 @@ def dijkstra():
                                                "Please write the name of the last node", parent=window)
         also_in_graph = list_nodes.search_node_by_name(name_end_node)
         if name_end_node is not None and also_in_graph:
-            distance, path = dijkstra_shortest_path(new_graph, name_init_node.upper(), name_end_node.upper())
-            counter, length = 0, len(path)
+            path = dijkstra_shortest_path(new_graph, name_init_node.upper(), name_end_node.upper(), 3)
+            counter, length = 0, len(path[0])
+            first_path = path[0]
             list_edges.reinit_edges(canvas)
+            for paths in path:
+                global_path.append(paths)
             while counter < length - 1:
-                name = path[counter] + path[counter + 1]
+                name = first_path[counter] + first_path[counter + 1]
                 list_edges.paint_edge(name, canvas)
                 counter = counter + 1
             for node in list_nodes.list_nodes:  # we repaint the nodes so the edges are left behind
                 node.paint_node(canvas)
-                node.change_color("yellow", canvas)
-            msg.showinfo(title=f"The shortest path from {name_init_node.upper()} to {name_end_node.upper()}",
-                         message=f"Number of edges: {distance}, Path: {path}")
+                node.change_color("yellow", canvas)            
+            print(global_path)
         else:
             msg.showinfo(title="Error", message=f"There is no node named {name_end_node}")
     else:
@@ -102,9 +98,39 @@ def re_init():
     canvas.delete("all")
     list_nodes.list_nodes = []
     list_edges.list_of_edges = []
+    global_path.clear()
+
+
+actual_path_counter = 1
+
+
+def refresh():
+    global actual_path_counter
+    counter, length_global = 0, len(global_path)
+    actual_path = []
+    if length_global == 0:
+        msg.showinfo(title="Error", message="You haven't analyze any graph yet")
+    else:
+        if actual_path_counter == length_global:
+            actual_path_counter = 0
+            actual_path = global_path[actual_path_counter].copy()
+            actual_path_counter += 1
+        else:
+            actual_path = global_path[actual_path_counter].copy()
+            actual_path_counter += 1
+    list_edges.reinit_edges(canvas)
+    length_actual = len(actual_path)
+    while counter < length_actual - 1:
+        name = actual_path[counter] + actual_path[counter + 1]
+        list_edges.paint_edge(name, canvas)
+        counter = counter + 1
+    for node in list_nodes.list_nodes:  # we repaint the nodes so the edges are left behind
+        node.paint_node(canvas)
+        node.change_color("yellow", canvas)
 
 
 if __name__ == '__main__':
+    global_path = []
     list_nodes = ListNodes()
     list_edges = ListEdges()
     window = tk.Tk()
@@ -120,4 +146,7 @@ if __name__ == '__main__':
     button_reinit = tk.Button(window, text="Clear", command=re_init)
     button_reinit.pack()
     button_reinit.place(x=100, y=10)
+    button_refresh = tk.Button(window, text="Refresh", command=refresh)
+    button_refresh.pack()
+    button_refresh.place(x=140, y=10)
     window.mainloop()
